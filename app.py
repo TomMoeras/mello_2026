@@ -2,6 +2,7 @@ import streamlit as st
 import json
 from pathlib import Path
 from datetime import datetime
+from streamlit_sortables import sort_items
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -355,7 +356,7 @@ def _ensure_data():
     if not PREDICTIONS_FILE.exists():
         PREDICTIONS_FILE.write_text("{}")
     if not RESULTS_FILE.exists():
-        RESULTS_FILE.write_text(json.dumps({"results": [], "revealed": False}))
+        RESULTS_FILE.write_text(json.dumps({"results": [], "revealed": False, "live": False}))
 
 
 def load_predictions() -> dict:
@@ -378,11 +379,11 @@ def load_results() -> dict:
     return json.loads(RESULTS_FILE.read_text())
 
 
-def save_results(results: list[str], revealed: bool):
+def save_results(results: list[str], revealed: bool, live: bool = False):
     _ensure_data()
     RESULTS_FILE.write_text(
         json.dumps(
-            {"results": results, "revealed": revealed},
+            {"results": results, "revealed": revealed, "live": live},
             indent=2,
             ensure_ascii=False,
         )
@@ -616,11 +617,20 @@ def inject_css():
 def render_prediction_tab():
     results_data = load_results()
     revealed = results_data.get("revealed", False)
+    live = results_data.get("live", False)
 
     if revealed:
         st.info(
-            "Predictions are closed - the results have been revealed! "
+            "Predictions are closed - the final results have been revealed! "
             "Head to the **Leaderboard** tab."
+        )
+        _render_check_own()
+        return
+
+    if live:
+        st.info(
+            "Predictions are closed - the show is live! "
+            "Check the **Leaderboard** tab for the live ranking."
         )
         _render_check_own()
         return
@@ -772,23 +782,109 @@ def _render_check_own():
 
 
 # ---------------------------------------------------------------------------
-# Leaderboard tab
+# Live leaderboard
 # ---------------------------------------------------------------------------
-def render_leaderboard_tab():
+LIVE_REFRESH_SECONDS = 1
+
+
+@st.fragment(run_every=LIVE_REFRESH_SECONDS)
+def _live_leaderboard_fragment():
     results_data = load_results()
-    if not results_data.get("revealed", False):
+    live = results_data.get("live", False)
+    revealed = results_data.get("revealed", False)
+    actual = results_data.get("results", [])
+
+    if revealed:
         st.info(
-            "The leaderboard will appear once the results are revealed. "
-            "Stay tuned!"
+            "Final results have been published! "
+            "Refresh the page to see the full leaderboard."
         )
         return
 
-    actual = results_data.get("results", [])
+    if not live:
+        st.info("The live leaderboard has been turned off.")
+        return
+
     if not actual:
         st.warning("No results available yet.")
         return
 
-    # -- Actual top 5 --------------------------------------------------------
+    st.markdown(
+        '<div style="text-align:center;margin-bottom:8px">'
+        '<span style="display:inline-block;background:#dc2626;color:#fff;'
+        'border-radius:6px;padding:3px 12px;font-weight:700;font-size:.85rem;'
+        'letter-spacing:1px;animation:pulse 2s infinite">'
+        "LIVE</span></div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>",
+        unsafe_allow_html=True,
+    )
+    st.subheader("Live Ranking")
+    st.caption(
+        f"Based on {len(actual)} result(s) entered so far. "
+        "Auto-refreshes every "
+        f"{LIVE_REFRESH_SECONDS} seconds. "
+        "No scores or predictions shown until the final results are published."
+    )
+
+    preds = load_predictions()
+    if not preds:
+        st.warning("No predictions were submitted.")
+        return
+
+    board = []
+    for user, data in preds.items():
+        score = calculate_score(data["prediction"], actual)
+        board.append({"name": user, "score": score})
+    board.sort(key=lambda x: (-x["score"], x["name"]))
+
+    html = ""
+    for rank, entry in enumerate(board):
+        medal = MEDAL.get(rank, "")
+        pos = rank + 1
+        tier = {1: "gold", 2: "silver", 3: "bronze"}.get(pos, "plain")
+        html += (
+            f'<div class="mello-rank-row {tier}" style="padding:12px 16px">'
+            f'<div class="rank-num">{pos}</div>'
+            f'<div style="flex:1;font-weight:700;font-size:1.05rem">'
+            f"{medal} {entry['name']}</div>"
+            f"</div>"
+        )
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def _render_live_leaderboard(actual: list[str]):
+    _live_leaderboard_fragment()
+
+
+# ---------------------------------------------------------------------------
+# Leaderboard tab
+# ---------------------------------------------------------------------------
+def render_leaderboard_tab():
+    results_data = load_results()
+    revealed = results_data.get("revealed", False)
+    live = results_data.get("live", False)
+    actual = results_data.get("results", [])
+
+    if not revealed and not live:
+        st.info(
+            "The leaderboard will appear once the show starts. "
+            "Stay tuned!"
+        )
+        return
+
+    if not actual:
+        st.warning("No results available yet.")
+        return
+
+    # -- LIVE mode: simple ranking, no details -------------------------------
+    if live and not revealed:
+        _render_live_leaderboard(actual)
+        return
+
+    # -- FINAL mode: full stats + breakdown ----------------------------------
     st.subheader("Actual Top 5")
     html = ""
     for i, artist in enumerate(actual[:5]):
@@ -1068,6 +1164,7 @@ def render_admin_tab():
     results_data = load_results()
     current_results = results_data.get("results", [])
     revealed = results_data.get("revealed", False)
+    live = results_data.get("live", False)
 
     preds = load_predictions()
     st.subheader("Manage predictions")
@@ -1122,64 +1219,107 @@ def render_admin_tab():
 
     st.divider()
 
+    # -- Enter / edit results ------------------------------------------------
     st.subheader("Enter actual results")
-    st.caption("Rank all 12 artists from 1st to 12th.")
+    st.caption(
+        "Drag artists into the correct order. "
+        "Position 1 at the top = winner."
+    )
 
     if current_results:
-        st.write("**Current saved results:**")
-        html = ""
-        for i, a in enumerate(current_results):
-            html += _ranking_row_html(
-                i + 1, ARTIST_PHOTOS.get(a, ""), a, ARTIST_SONGS.get(a, "")
-            )
-        st.markdown(html, unsafe_allow_html=True)
-        if not st.checkbox("Edit results", key="edit_res"):
-            _render_reveal_toggle(current_results, revealed)
-            return
+        remaining = [a for a in ARTIST_NAMES if a not in current_results]
+        initial_order = list(current_results) + remaining
+    else:
+        initial_order = list(ARTIST_NAMES)
 
-    picks: list[str | None] = []
-    valid = True
-    for pos in range(12):
-        available = [a for a in ARTIST_NAMES if a not in picks]
-        pick = st.selectbox(
-            f"Position {pos + 1}",
-            options=["- select -"] + available,
-            format_func=lambda x: (
-                f"{x}  -  \"{ARTIST_SONGS[x]}\"" if x in ARTIST_SONGS else x
-            ),
-            key=f"res_{pos}",
+    display_items = [
+        f"{a}  -  \"{ARTIST_SONGS.get(a, '')}\"" for a in initial_order
+    ]
+
+    st.markdown(
+        '<style>'
+        '.sortable-item{font-size:.95rem !important;padding:8px 12px !important;'
+        'border-radius:8px !important;margin-bottom:4px !important;'
+        'background:#f8fafc !important;border:1px solid #e2e8f0 !important;'
+        'color:#1a1a2e !important;cursor:grab !important}'
+        '.sortable-item:active{cursor:grabbing !important}'
+        '</style>',
+        unsafe_allow_html=True,
+    )
+
+    sorted_display = sort_items(display_items, direction="vertical")
+
+    display_to_name = {
+        f"{a}  -  \"{ARTIST_SONGS.get(a, '')}\"": a for a in ARTIST_NAMES
+    }
+    sorted_artists = [display_to_name[d] for d in sorted_display]
+
+    st.write("**Current order:**")
+    preview_html = ""
+    for i, a in enumerate(sorted_artists):
+        preview_html += _ranking_row_html(
+            i + 1, ARTIST_PHOTOS.get(a, ""), a, ARTIST_SONGS.get(a, "")
         )
-        if pick == "- select -":
-            valid = False
-            picks.append(None)
-        else:
-            picks.append(pick)
+    st.markdown(preview_html, unsafe_allow_html=True)
 
-    if st.button("Save results", type="primary", disabled=not valid):
-        clean = [p for p in picks if p]
-        save_results(clean, revealed)
+    if st.button("Save results", type="primary"):
+        save_results(sorted_artists, revealed, live)
         st.success("Results saved!")
         st.rerun()
 
     st.divider()
-    _render_reveal_toggle(current_results, revealed)
 
+    # -- Live leaderboard toggle ---------------------------------------------
+    st.subheader("Live leaderboard")
+    st.caption(
+        "Show a simple live ranking (names only, no scores or prediction "
+        "details). Closes predictions."
+    )
 
-def _render_reveal_toggle(current_results: list[str], revealed: bool):
-    st.subheader("Reveal leaderboard")
-    if revealed:
-        st.write("Leaderboard is currently **visible** to everyone.")
-        if st.button("Hide leaderboard"):
-            save_results(current_results, False)
+    if live:
+        st.success("Live leaderboard is **ON**.")
+        if st.button("Turn off live leaderboard"):
+            save_results(current_results, revealed, False)
             st.rerun()
     else:
-        st.write("Leaderboard is currently **hidden**.")
-        if st.button("Reveal leaderboard", type="primary"):
-            if not current_results:
-                st.error("Save the actual results first.")
-            else:
-                save_results(current_results, True)
-                st.rerun()
+        if revealed:
+            st.info("Final results are published - live mode is not needed.")
+        else:
+            if st.button("Turn on live leaderboard", type="primary"):
+                if not current_results:
+                    st.error("Save at least some results first.")
+                else:
+                    save_results(current_results, False, True)
+                    st.rerun()
+
+    st.divider()
+
+    # -- Publish final results -----------------------------------------------
+    st.subheader("Publish final results")
+    st.caption(
+        "Reveals the full leaderboard with scores, statistics, "
+        "breakdowns, and odds analysis. This replaces the live ranking."
+    )
+
+    all_filled = len(current_results) == 12
+    if revealed:
+        st.success("Final results are **published** and visible to everyone.")
+        if st.button("Unpublish final results"):
+            save_results(current_results, False, False)
+            st.rerun()
+    else:
+        if not all_filled:
+            st.warning(
+                f"You have {len(current_results)}/12 positions entered. "
+                "All 12 are required to publish final results."
+            )
+        if st.button(
+            "Publish final results",
+            type="primary",
+            disabled=not all_filled,
+        ):
+            save_results(current_results, True, False)
+            st.rerun()
 
 
 # ---------------------------------------------------------------------------
