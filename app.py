@@ -1070,10 +1070,56 @@ def render_admin_tab():
     revealed = results_data.get("revealed", False)
 
     preds = load_predictions()
+    st.subheader("Manage predictions")
     st.write(f"**Predictions received:** {len(preds)}")
+
     if preds:
+        # Download as JSON
+        preds_json = json.dumps(preds, indent=2, ensure_ascii=False)
+        st.download_button(
+            "Download predictions as JSON",
+            data=preds_json,
+            file_name="mello2026_predictions.json",
+            mime="application/json",
+        )
+
+        # List with individual delete buttons
         for u in sorted(preds):
-            st.write(f"- {u}")
+            col_name, col_del = st.columns([4, 1])
+            with col_name:
+                pred_list = ", ".join(preds[u]["prediction"])
+                st.write(f"**{u}** - {pred_list}")
+            with col_del:
+                if st.button("\U0001f5d1", key=f"del_{u}", help=f"Delete {u}"):
+                    data = load_predictions()
+                    data.pop(u, None)
+                    PREDICTIONS_FILE.write_text(
+                        json.dumps(data, indent=2, ensure_ascii=False)
+                    )
+                    st.rerun()
+
+        # Reset all
+        st.write("")
+        with st.expander("Danger zone", expanded=False):
+            st.warning("This will permanently delete **all** predictions.")
+            if st.button("Reset all predictions", type="primary", key="reset_all"):
+                st.session_state._reset_confirm = True
+            if st.session_state.get("_reset_confirm"):
+                st.error("Are you sure? This cannot be undone.")
+                c1, c2 = st.columns(2)
+                with c1:
+                    if st.button("Yes, delete everything", key="confirm_reset"):
+                        PREDICTIONS_FILE.write_text("{}")
+                        st.session_state._reset_confirm = False
+                        st.success("All predictions have been reset.")
+                        st.rerun()
+                with c2:
+                    if st.button("Cancel", key="cancel_reset"):
+                        st.session_state._reset_confirm = False
+                        st.rerun()
+    else:
+        st.caption("No predictions yet.")
+
     st.divider()
 
     st.subheader("Enter actual results")
