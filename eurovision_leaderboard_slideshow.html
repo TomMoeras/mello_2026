@@ -1,0 +1,1019 @@
+// Create FullRankingsSlide component
+const FullRankingsSlide = ({ participants }) => {
+const [revealStage, setRevealStage] = useState(0);
+
+useEffect(() => {
+const timer1 = setTimeout(() => setRevealStage(1), 1500);
+return () => {
+clearTimeout(timer1);
+};
+}, []);
+
+return (
+<div className="flex flex-col items-center h-full p-6 overflow-hidden">
+    <List size={80} className="mb-8 text-blue-300" />
+    <h2 className="text-4xl font-bold mb-8 text-center">Complete Rankings</h2>
+
+    {revealStage >= 1 && (
+    <div className="w-full max-w-4xl mx-auto overflow-y-auto animate-fade-in" style={{ maxHeight: 'calc(100vh - 220px)'
+        }}>
+        <table className="w-full border-collapse">
+            <thead className="bg-blue-800 bg-opacity-50 sticky top-0">
+                <tr>
+                    <th className="p-4 text-left text-xl">Rank</th>
+                    <th className="p-4 text-left text-xl">Participant</th>
+                    <th className="p-4 text-center text-xl">Exact Matches</th>
+                    <th className="p-4 text-center text-xl">Top 3 Matches</th>
+                    <th className="p-4 text-center text-xl">Underdog Picks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {participants.map((participant, index) => (
+                <tr key={participant.name} className={`border-b border-blue-800 border-opacity-30 ${ index < 3
+                    ? 'bg-gradient-to-r from-yellow-900 to-yellow-800 bg-opacity-20' : index % 2===0
+                    ? 'bg-blue-900 bg-opacity-30' : '' }`}>
+                    <td className="p-4 font-bold text-lg">{index + 1}</td>
+                    <td className="p-4 text-lg">
+                        {index < 3 && ( <span className="mr-2 text-2xl">
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                            </span>
+                            )}
+                            {participant.name}
+                    </td>
+                    <td className="p-4 text-center">
+                        <span className={` font-bold text-xl ${participant.exact_matches>= 7 ? 'text-green-400' :
+                            participant.exact_matches >= 5 ? 'text-yellow-400' :
+                            'text-red-400'}
+                            `}>
+                            {participant.exact_matches}
+                        </span>
+                    </td>
+                    <td className="p-4 text-center">
+                        <span className={` font-bold text-xl ${participant.exact_top3_matches>= 2 ? 'text-green-400' :
+                            participant.exact_top3_matches >= 1 ? 'text-yellow-400' :
+                            'text-red-400'}
+                            `}>
+                            {participant.exact_top3_matches}
+                        </span>
+                    </td>
+                    <td className="p-4 text-center">
+                        <span className={` font-bold text-xl ${participant.outsiderHits>= 3 ? 'text-green-400' :
+                            participant.outsiderHits >= 1 ? 'text-yellow-400' :
+                            'text-gray-400'}
+                            `}>
+                            {participant.outsiderHits || 0}
+                        </span>
+                    </td>
+                </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
+    )}
+</div>
+);
+};import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Upload, Trophy, CheckCircle, AlertTriangle, ArrowRight, Award, ThumbsUp, Activity,
+Users, BarChart, List } from 'lucide-react';
+
+const EurovisionSlideshow = () => {
+const [data, setData] = useState(null);
+const [loading, setLoading] = useState(false);
+const [currentSlide, setCurrentSlide] = useState(0);
+const [slideDirection, setSlideDirection] = useState('next');
+const [autoplay, setAutoplay] = useState(false);
+const [autoplayInterval, setAutoplayInterval] = useState(null);
+
+const handleFileUpload = (event) => {
+const file = event.target.files[0];
+if (!file) return;
+
+setLoading(true);
+const reader = new FileReader();
+
+reader.onload = (e) => {
+try {
+const jsonData = JSON.parse(e.target.result);
+processData(jsonData);
+setLoading(false);
+setCurrentSlide(1); // Move to first content slide after upload
+} catch (error) {
+console.error("Error parsing JSON:", error);
+setLoading(false);
+alert("Invalid JSON file. Please check the format.");
+}
+};
+
+reader.readAsText(file);
+};
+
+const processData = (jsonData) => {
+// Calculate additional statistics
+const processedData = {...jsonData};
+
+// Calculate overall statistics
+const totalParticipants = processedData.participants.length;
+const totalPossibleMatches = totalParticipants * 10; // 10 predictions per participant
+const totalExactMatches = processedData.participants.reduce((sum, p) => sum + p.exact_matches, 0);
+const overallAccuracy = (totalExactMatches / totalPossibleMatches) * 100;
+
+// Add performance assessment
+let accuracyMessage = "";
+if (overallAccuracy >= 60) {
+accuracyMessage = "Amazing! Everyone had an excellent understanding of Eurovision this year!";
+} else if (overallAccuracy >= 50) {
+accuracyMessage = "Pretty good! The group had a decent grasp of the Eurovision landscape.";
+} else {
+accuracyMessage = "Ouch! Seems like Eurovision surprised everyone this year!";
+}
+
+// Count participants who got the winner right
+const actualWinner = processedData.actual_results[0];
+const winnerCorrectCount = processedData.participants.filter(p =>
+p.predictions[0] === actualWinner
+).length;
+
+// Add winner prediction assessment
+let winnerMessage = "";
+const winnerPercentage = (winnerCorrectCount / totalParticipants) * 100;
+if (winnerPercentage >= 60) {
+winnerMessage = `${actualWinner} was clearly the favorite among our predictors!`;
+} else if (winnerPercentage >= 30) {
+winnerMessage = `Some of you had faith in ${actualWinner}, but not everyone was convinced.`;
+} else if (winnerPercentage > 0) {
+winnerMessage = `Very few saw ${actualWinner}'s win coming! They surprised almost everyone.`;
+} else {
+winnerMessage = `Wow! No one predicted ${actualWinner} would win. What an upset!`;
+}
+
+// Count participants who got all top 3 right in exact order
+const perfectTop3Count = processedData.participants.filter(p =>
+p.exact_top3_matches === 3
+).length;
+
+// Add top3 assessment
+let top3Message = "";
+if (perfectTop3Count > 0) {
+const perfectPercentage = (perfectTop3Count / totalParticipants) * 100;
+if (perfectPercentage >= 30) {
+top3Message = "Impressive! Many participants correctly predicted the entire top 3!";
+} else {
+top3Message = "Someone managed to predict the entire top 3 correctly! That's impressive!";
+}
+} else {
+top3Message = "The exact top 3 was too difficult for anyone to predict perfectly!";
+}
+
+// Get the bookmakers' top 10 countries
+const bookmakerTop10 = processedData.countries_by_odds
+.slice(0, 10)
+.map(item => item.country);
+
+// Calculate who beat the odds the most (countries predicted correctly that weren't in bookmaker's top 10)
+processedData.participants.forEach(participant => {
+// Count countries predicted that weren't in bookmaker's top 10 but were in actual top 10
+let outsiderHits = 0;
+
+participant.predictions.forEach(country => {
+if (!bookmakerTop10.includes(country) && processedData.actual_results.includes(country)) {
+outsiderHits++;
+}
+});
+
+participant.outsiderHits = outsiderHits;
+});
+
+// Sort participants by exact matches (our simplified scoring)
+const rankedParticipants = [...processedData.participants].sort((a, b) => {
+// Primary sort by exact matches
+if (b.exact_matches !== a.exact_matches) {
+return b.exact_matches - a.exact_matches;
+}
+// Secondary sort by exact top 3 matches
+return b.exact_top3_matches - a.exact_top3_matches;
+});
+
+// Add these calculated stats to the processed data
+processedData.stats = {
+overallAccuracy,
+accuracyMessage,
+winnerCorrectCount,
+winnerMessage,
+perfectTop3Count,
+top3Message,
+totalParticipants,
+rankedParticipants,
+bookmakerTop10,
+oddsBeatChampion: [...processedData.participants].sort((a, b) =>
+b.outsiderHits - a.outsiderHits
+)[0]
+};
+
+setData(processedData);
+};
+
+const nextSlide = () => {
+setSlideDirection('next');
+setCurrentSlide(prev =>
+prev === getTotalSlides() ? 0 : prev + 1
+);
+};
+
+const prevSlide = () => {
+setSlideDirection('prev');
+setCurrentSlide(prev =>
+prev === 0 ? getTotalSlides() : prev - 1
+);
+};
+
+const getTotalSlides = () => {
+return 8; // Total number of slides including intro and results
+};
+
+const toggleAutoplay = () => {
+if (autoplay) {
+clearInterval(autoplayInterval);
+setAutoplayInterval(null);
+} else {
+const interval = setInterval(() => {
+nextSlide();
+}, 5000); // Change slide every 5 seconds
+setAutoplayInterval(interval);
+}
+setAutoplay(!autoplay);
+};
+
+// Initialize cleanup
+useEffect(() => {
+return () => {
+if (autoplayInterval) {
+clearInterval(autoplayInterval);
+}
+};
+}, [autoplayInterval]);
+
+// Function to create and play a Eurovision-style melody
+const playMusic = () => {
+try {
+if (!audioContextRef.current) {
+// Create audio context
+audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// If already playing, stop current music first
+if (isMusicPlaying) {
+stopMusic();
+}
+
+const ctx = audioContextRef.current;
+const currentTime = ctx.currentTime;
+
+// Create a master gain node
+const masterGain = ctx.createGain();
+masterGain.gain.value = 0.2; // Control overall volume
+masterGain.connect(ctx.destination);
+
+// Define a simple Eurovision-inspired melody (in major key)
+const notes = [
+{ note: 'A4', duration: 0.25 },
+{ note: 'C5', duration: 0.25 },
+{ note: 'E5', duration: 0.5 },
+{ note: 'D5', duration: 0.25 },
+{ note: 'F5', duration: 0.25 },
+{ note: 'E5', duration: 0.5 },
+{ note: 'C5', duration: 0.25 },
+{ note: 'A4', duration: 0.25 },
+{ note: 'G4', duration: 0.5 },
+{ note: 'A4', duration: 0.25 },
+{ note: 'C5', duration: 0.25 },
+{ note: 'E5', duration: 0.5 }
+];
+
+// Function to convert note names to frequencies
+const getFrequency = (note) => {
+const notes = { C: 261.63, D: 293.66, E: 329.63, F: 349.23, G: 392.00, A: 440.00, B: 493.88 };
+const octave = parseInt(note.slice(-1));
+const baseNote = note.slice(0, -1);
+return notes[baseNote] * Math.pow(2, octave - 4);
+};
+
+// Create a melody oscillator
+const melodyOsc = ctx.createOscillator();
+melodyOsc.type = 'sine';
+
+// Create a gain node for the melody
+const melodyGain = ctx.createGain();
+melodyGain.gain.value = 0;
+melodyGain.connect(masterGain);
+melodyOsc.connect(melodyGain);
+
+// Create a bass oscillator for accompaniment
+const bassOsc = ctx.createOscillator();
+bassOsc.type = 'triangle';
+bassOsc.frequency.value = 110; // A2
+
+// Create a gain node for the bass
+const bassGain = ctx.createGain();
+bassGain.gain.value = 0;
+bassGain.connect(masterGain);
+bassOsc.connect(bassGain);
+
+// Start oscillators
+melodyOsc.start();
+bassOsc.start();
+
+// Save references to stop later
+oscillatorsRef.current = [melodyOsc, bassOsc];
+gainNodesRef.current = [melodyGain, bassGain, masterGain];
+
+// Schedule the melody
+let timeOffset = 0;
+
+// Function to play the melody and repeat
+const scheduleMelody = () => {
+notes.forEach((noteObj) => {
+const freq = getFrequency(noteObj.note);
+melodyOsc.frequency.setValueAtTime(freq, currentTime + timeOffset);
+
+// Create envelopes for smoother note transitions
+melodyGain.gain.setValueAtTime(0, currentTime + timeOffset);
+melodyGain.gain.linearRampToValueAtTime(0.8, currentTime + timeOffset + 0.05);
+melodyGain.gain.linearRampToValueAtTime(0.3, currentTime + timeOffset + noteObj.duration - 0.05);
+melodyGain.gain.linearRampToValueAtTime(0, currentTime + timeOffset + noteObj.duration);
+
+// Bass rhythm (quarter notes)
+if (timeOffset % 1 === 0) {
+bassOsc.frequency.setValueAtTime(freq / 4, currentTime + timeOffset);
+bassGain.gain.setValueAtTime(0, currentTime + timeOffset);
+bassGain.gain.linearRampToValueAtTime(0.5, currentTime + timeOffset + 0.05);
+bassGain.gain.linearRampToValueAtTime(0, currentTime + timeOffset + 0.5);
+}
+
+timeOffset += noteObj.duration;
+});
+};
+
+// Schedule melody and repeat multiple times
+for (let i = 0; i < 8; i++) { scheduleMelody(); } setIsMusicPlaying(true); } catch (err) { console.error("Error playing
+    music:", err); } }; // Function to stop the music const stopMusic=()=> {
+    if (oscillatorsRef.current.length) {
+    oscillatorsRef.current.forEach(osc => {
+    try {
+    osc.stop();
+    } catch (e) {
+    // Already stopped, ignore
+    }
+    });
+    oscillatorsRef.current = [];
+    }
+
+    if (gainNodesRef.current.length) {
+    gainNodesRef.current.forEach(gain => {
+    try {
+    gain.disconnect();
+    } catch (e) {
+    // Already disconnected, ignore
+    }
+    });
+    gainNodesRef.current = [];
+    }
+
+    setIsMusicPlaying(false);
+    };
+
+    // Toggle music playback
+    const toggleMusic = () => {
+    if (isMusicPlaying) {
+    stopMusic();
+    } else {
+    playMusic();
+    }
+    };
+
+    // Render the appropriate slide based on currentSlide index
+    const renderSlide = () => {
+    if (!data && currentSlide !== 0) {
+    return
+    <UploadPrompt handleFileUpload={handleFileUpload} />;
+    }
+
+    switch (currentSlide) {
+    case 0:
+    return
+    <UploadPrompt handleFileUpload={handleFileUpload} />;
+    case 1:
+    return
+    <IntroSlide data={data} />;
+    case 2:
+    return
+    <OverallAccuracySlide stats={data.stats} />;
+    case 3:
+    return
+    <WinnerPredictionSlide stats={data.stats} winner={data.actual_results[0]} />;
+    case 4:
+    return
+    <Top3PredictionSlide stats={data.stats} top3={data.actual_results.slice(0, 3)} />;
+    case 5:
+    return
+    <OddsBeatSlide oddsBeatChampion={data.stats.oddsBeatChampion} odds={data.odds} />;
+    case 6:
+    return
+    <ThirdPlaceSlide participant={data.stats.rankedParticipants[2]} place={3} />;
+    case 7:
+    return
+    <LeaderboardSlide top3={data.stats.rankedParticipants.slice(0, 3)} />;
+    case 8:
+    return
+    <FullRankingsSlide participants={data.stats.rankedParticipants} />;
+    default:
+    return
+    <UploadPrompt handleFileUpload={handleFileUpload} />;
+    }
+    };
+
+    return (
+    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-900 to-purple-900 text-white">
+        {/* Header */}
+        <header className="p-4 flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Eurovision 2025 Predictions</h1>
+            <div className="flex items-center space-x-4">
+                {data && (
+                <button onClick={toggleAutoplay}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors text-lg">
+                    {autoplay ? "Pause Slideshow" : "Auto Play"}
+                </button>
+                )}
+            </div>
+        </header>
+
+        {/* Main content */}
+        <main className="flex-1 relative overflow-hidden">
+            <div className={`absolute inset-0 transition-transform duration-500 ease-in-out ${ slideDirection==='next'
+                ? 'animate-slide-in-right' : 'animate-slide-in-left' }`}>
+                {loading ? (
+                <div className="flex items-center justify-center h-full">
+                    <div className="text-2xl">Loading...</div>
+                </div>
+                ) : (
+                renderSlide()
+                )}
+            </div>
+        </main>
+
+        {/* Navigation controls */}
+        {data && currentSlide > 0 && (
+        <div className="p-4 flex justify-between">
+            <button onClick={prevSlide}
+                className="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors">
+                <ChevronLeft size={24} />
+            </button>
+            <div className="text-sm">
+                Slide {currentSlide} of {getTotalSlides()}
+            </div>
+            <button onClick={nextSlide}
+                className="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors">
+                <ChevronRight size={24} />
+            </button>
+        </div>
+        )}
+    </div>
+    );
+    };
+
+    // Individual Slide Components
+    const UploadPrompt = ({ handleFileUpload }) => (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <Upload size={80} className="mb-6 text-blue-300" />
+        <h2 className="text-4xl font-bold mb-8">Eurovision Prediction Results</h2>
+        <p className="mb-10 text-2xl">Upload your prediction results JSON file to start the slideshow</p>
+        <label className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer transition-colors text-xl">
+            <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+            <span className="flex items-center">
+                <Upload size={24} className="mr-3" />
+                Choose JSON File
+            </span>
+        </label>
+    </div>
+    );
+
+    const IntroSlide = ({ data }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4000);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    };
+    }, []);
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <div className="max-w-3xl">
+            <h2 className="text-5xl font-bold mb-8 text-yellow-300">Eurovision 2025</h2>
+            <p className="text-3xl mb-10">Prediction Results Revealed!</p>
+
+            {revealStage >= 1 && (
+            <div className="mb-10 animate-fade-in">
+                <p className="text-2xl mb-4">We've tallied all your predictions</p>
+                <p className="text-lg opacity-70">Let's see how well you did forecasting this year's contest</p>
+            </div>
+            )}
+
+            {revealStage >= 2 && (
+            <>
+                <div className="mb-10 p-6 bg-white bg-opacity-10 rounded-lg animate-scale-in">
+                    <h3 className="text-2xl mb-4">Actual Top 3:</h3>
+                    <div className="flex justify-center space-x-8">
+                        {data.actual_results.slice(0, 3).map((country, index) => (
+                        <div key={country} className="flex flex-col items-center">
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold
+                                mb-3 ${ index===0 ? 'bg-yellow-400 text-black' : index===1 ? 'bg-gray-300 text-black'
+                                : 'bg-amber-700 text-white' }`}>
+                                {index + 1}
+                            </div>
+                            <div className="text-xl">{country}</div>
+                        </div>
+                        ))}
+                    </div>
+                </div>
+
+                <p className="text-2xl animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                    Let's see how our {data.stats.totalParticipants} participants did with their predictions!
+                </p>
+            </>
+            )}
+        </div>
+    </div>
+    );
+    };
+
+    const OverallAccuracySlide = ({ stats }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4500);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    };
+    }, []);
+
+    // Determine color based on accuracy
+    const getAccuracyColor = () => {
+    if (stats.overallAccuracy >= 60) return "text-green-400";
+    if (stats.overallAccuracy >= 50) return "text-yellow-400";
+    return "text-red-400";
+    };
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <Activity size={80} className="mb-8 text-blue-300" />
+        <h2 className="text-4xl font-bold mb-8">Overall Accuracy</h2>
+
+        {revealStage >= 1 && (
+        <div className="mb-10 text-2xl max-w-md animate-fade-in">
+            <p>How accurate were our Eurovision predictions?</p>
+            <p className="mt-4 text-lg opacity-70">Across all participants, how many top 10 placements did we get right?
+            </p>
+        </div>
+        )}
+
+        {revealStage >= 2 && (
+        <>
+            <div className="w-72 h-72 relative mb-10 animate-scale-in">
+                <div className="absolute inset-0 rounded-full border-8 border-blue-300 opacity-20"></div>
+                <div className="absolute inset-0 rounded-full border-8 border-blue-500 animate-accuracy-fill" style={{
+                    clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.sin(stats.overallAccuracy / 100 * Math.PI *
+                    2)}% ${50 - 50 * Math.cos(stats.overallAccuracy / 100 * Math.PI * 2)}%, 50% 50%)`,
+                    transform: 'rotate(-90deg)' }}></div>
+                <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <span className={`text-6xl font-bold
+                        ${getAccuracyColor()}`}>{Math.round(stats.overallAccuracy)}%</span>
+                    <span className="text-xl opacity-70">Accuracy</span>
+                </div>
+            </div>
+
+            <p className="text-2xl max-w-lg animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                Collectively, our participants correctly predicted {Math.round(stats.overallAccuracy)}% of the top 10
+                positions!
+            </p>
+
+            <p className="text-xl max-w-lg mt-6 animate-fade-in" style={{ animationDelay: '1s' }}>
+                {stats.accuracyMessage}
+            </p>
+        </>
+        )}
+    </div>
+    );
+    };
+
+    const WinnerPredictionSlide = ({ stats, winner }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4500);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    };
+    }, []);
+
+    // Determine color based on winner prediction rate
+    const getWinnerColor = () => {
+    const percentage = (stats.winnerCorrectCount / stats.totalParticipants) * 100;
+    if (percentage >= 60) return "text-green-400";
+    if (percentage >= 30) return "text-yellow-400";
+    return "text-red-400";
+    };
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <Trophy size={80} className="mb-8 text-yellow-300" />
+        <h2 className="text-4xl font-bold mb-8">Winner Predictions</h2>
+
+        {revealStage >= 1 && (
+        <div className="mb-10 text-2xl max-w-lg animate-fade-in">
+            <p>Did anyone see the winner coming?</p>
+            <p className="mt-4 text-lg opacity-70">How many participants correctly predicted that {winner} would win?
+            </p>
+        </div>
+        )}
+
+        {revealStage >= 2 && (
+        <>
+            <div
+                className="w-72 h-72 bg-yellow-400 bg-opacity-20 rounded-full flex items-center justify-center mb-10 animate-scale-in">
+                <div className="text-center">
+                    <div className={`text-7xl font-bold mb-3 ${getWinnerColor()}`}>{stats.winnerCorrectCount}</div>
+                    <div className="text-2xl">people got it right</div>
+                </div>
+            </div>
+
+            <p className="text-2xl mb-5 animate-fade-in max-w-lg">
+                {stats.winnerCorrectCount} out of {stats.totalParticipants} participants correctly predicted that <span
+                    className="font-bold text-yellow-300">{winner}</span> would win!
+            </p>
+
+            <p className="text-xl opacity-70 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                That's {Math.round((stats.winnerCorrectCount / stats.totalParticipants) * 100)}% of our Eurovision
+                experts!
+            </p>
+
+            <p className="text-xl max-w-lg mt-6 animate-fade-in" style={{ animationDelay: '1s' }}>
+                {stats.winnerMessage}
+            </p>
+        </>
+        )}
+    </div>
+    );
+    };
+
+    const Top3PredictionSlide = ({ stats, top3 }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4500);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    };
+    }, []);
+
+    // Determine color based on top 3 prediction
+    const getTop3Color = () => {
+    if (stats.perfectTop3Count > 0) {
+    const percentage = (stats.perfectTop3Count / stats.totalParticipants) * 100;
+    if (percentage >= 30) return "text-green-400";
+    return "text-yellow-400";
+    }
+    return "text-red-400";
+    };
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <Award size={80} className="mb-8 text-purple-300" />
+        <h2 className="text-4xl font-bold mb-8">Perfect Top 3 Predictions</h2>
+
+        {revealStage >= 1 && (
+        <div className="mb-10 text-2xl max-w-lg animate-fade-in">
+            <p>The ultimate Eurovision prediction challenge</p>
+            <p className="mt-4 text-lg opacity-70">Did anyone correctly predict the entire top 3 in exact order?</p>
+        </div>
+        )}
+
+        {revealStage >= 2 && (
+        <>
+            <div className="flex justify-center mb-10 animate-scale-in">
+                {top3.map((country, index) => (
+                <div key={country} className="mx-6 text-center">
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mb-3 ${
+                        index===0 ? 'bg-yellow-400 text-black' : index===1 ? 'bg-gray-300 text-black'
+                        : 'bg-amber-700 text-white' }`}>
+                        {index + 1}
+                    </div>
+                    <div className="text-xl">{country}</div>
+                </div>
+                ))}
+            </div>
+
+            <div className="bg-purple-500 bg-opacity-20 p-8 rounded-lg max-w-lg mb-10 animate-fade-in" style={{
+                animationDelay: '0.5s' }}>
+                <div className={`text-6xl font-bold mb-3 ${getTop3Color()}`}>{stats.perfectTop3Count}</div>
+                <div className="text-2xl">participants got the entire top 3 correct!</div>
+            </div>
+
+            <p className="text-2xl animate-fade-in" style={{ animationDelay: '0.8s' }}>
+                {stats.perfectTop3Count === 0 ? (
+                "Nobody managed to predict the exact top 3 in the correct order!"
+                ) : (
+                `That's an impressive ${Math.round((stats.perfectTop3Count / stats.totalParticipants) * 100)}% success
+                rate!`
+                )}
+            </p>
+
+            <p className="text-xl max-w-lg mt-6 animate-fade-in" style={{ animationDelay: '1.2s' }}>
+                {stats.top3Message}
+            </p>
+        </>
+        )}
+    </div>
+    );
+    };
+
+    const OddsBeatSlide = ({ oddsBeatChampion, odds }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4500);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    };
+    }, []);
+
+    // Color based on number of underdog hits
+    const getUnderdogColor = () => {
+    if (oddsBeatChampion.outsiderHits >= 3) return "text-green-400";
+    if (oddsBeatChampion.outsiderHits >= 1) return "text-yellow-400";
+    return "text-red-400";
+    };
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <AlertTriangle size={80} className="mb-8 text-orange-300" />
+        <h2 className="text-4xl font-bold mb-8">The Underdog Champion</h2>
+
+        {revealStage >= 1 && (
+        <div className="mb-10 text-2xl max-w-lg animate-fade-in">
+            <p>Who saw beyond the bookmakers' favorites?</p>
+            <p className="mt-4 text-lg opacity-70">
+                This person correctly predicted countries that weren't in the bookmakers' top 10
+            </p>
+        </div>
+        )}
+
+        {revealStage >= 2 && (
+        <>
+            <div className="bg-gradient-to-r from-orange-600 to-red-600 p-8 rounded-lg max-w-lg mb-10 animate-scale-in">
+                <h3 className="text-3xl font-bold mb-5">{oddsBeatChampion.name}</h3>
+                <p className="text-xl mb-8">Made the most accurate underdog predictions!</p>
+
+                <div className="flex justify-center items-center space-x-4">
+                    <div className="text-center">
+                        <div className={`text-6xl font-bold ${getUnderdogColor()}`}>{oddsBeatChampion.outsiderHits}
+                        </div>
+                        <div className="text-lg opacity-70 mt-2">Underdog countries correctly predicted</div>
+                    </div>
+                </div>
+            </div>
+
+            <p className="text-2xl max-w-lg animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                They correctly predicted {oddsBeatChampion.outsiderHits} {oddsBeatChampion.outsiderHits === 1 ?
+                'country' : 'countries'} that
+                the bookmakers didn't have in their top 10!
+            </p>
+        </>
+        )}
+    </div>
+    );
+    };
+
+    const ThirdPlaceSlide = ({ participant, place }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4500);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    };
+    }, []);
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+        <div className="w-28 h-28 rounded-full bg-amber-700 flex items-center justify-center mb-8">
+            <Trophy size={56} />
+        </div>
+        <h2 className="text-4xl font-bold mb-8">In 3rd Place...</h2>
+
+        {revealStage >= 1 && (
+        <div className="mb-10 text-2xl max-w-lg animate-fade-in">
+            <p>The results are in!</p>
+            <p className="mt-4 text-lg opacity-70">Let's reveal our Eurovision prediction champions</p>
+        </div>
+        )}
+
+        {revealStage >= 2 && (
+        <>
+            <div className="text-7xl font-bold mb-10 animate-reveal">{participant.name}</div>
+
+            <div className="grid grid-cols-2 gap-8 max-w-lg animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                <div className="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div className="text-4xl font-bold">{participant.exact_matches}</div>
+                    <div className="text-lg opacity-70">Exact Matches</div>
+                </div>
+                <div className="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div className="text-4xl font-bold">{participant.exact_top3_matches}</div>
+                    <div className="text-lg opacity-70">Top 3 Matches</div>
+                </div>
+            </div>
+        </>
+        )}
+    </div>
+    );
+    };
+
+    const LeaderboardSlide = ({ top3 }) => {
+    const [revealStage, setRevealStage] = useState(0);
+
+    useEffect(() => {
+    const timer1 = setTimeout(() => setRevealStage(1), 1500);
+    const timer2 = setTimeout(() => setRevealStage(2), 4000);
+    const timer3 = setTimeout(() => setRevealStage(3), 6500);
+    const timer4 = setTimeout(() => setRevealStage(4), 9000);
+    return () => {
+    clearTimeout(timer1);
+    clearTimeout(timer2);
+    clearTimeout(timer3);
+    clearTimeout(timer4);
+    };
+    }, []);
+
+    return (
+    <div className="flex flex-col items-center justify-center h-full p-6">
+        <h2 className="text-5xl font-bold mb-10 text-center">Final Leaderboard</h2>
+
+        {revealStage >= 1 && (
+        <div className="mb-10 text-2xl max-w-lg text-center animate-fade-in">
+            <p>And now... the Eurovision 2025 Prediction Champions!</p>
+        </div>
+        )}
+
+        <div className="flex items-end justify-center w-full max-w-4xl mb-8">
+            {/* Second Place */}
+            {revealStage >= 3 && (
+            <div className="w-1/3 text-center mx-6 animate-podium-rise" style={{ animationDelay: '0.3s' }}>
+                <div
+                    className="mx-auto w-24 h-24 rounded-full bg-gray-300 text-black flex items-center justify-center mb-5">
+                    <Trophy size={48} />
+                </div>
+                <div className="bg-gray-700 bg-opacity-50 rounded-t-lg p-6 h-72">
+                    <h3 className="text-2xl font-bold mb-3">{top3[1].name}</h3>
+                    <div className="text-5xl font-bold mb-4">2nd</div>
+                    <div className="bg-white bg-opacity-10 p-3 rounded mb-3">
+                        <div className="text-2xl font-bold">{top3[1].exact_matches}</div>
+                        <div className="text-base opacity-70">Exact Matches</div>
+                    </div>
+                    <div className="bg-white bg-opacity-10 p-3 rounded">
+                        <div className="text-2xl font-bold">{top3[1].exact_top3_matches}</div>
+                        <div className="text-base opacity-70">Top 3 Matches</div>
+                    </div>
+                </div>
+            </div>
+            )}
+
+            {/* First Place */}
+            {revealStage >= 4 && (
+            <div className="w-1/3 text-center mx-6 animate-podium-rise">
+                <div
+                    className="mx-auto w-28 h-28 rounded-full bg-yellow-400 text-black flex items-center justify-center mb-5">
+                    <Trophy size={56} />
+                </div>
+                <div className="bg-yellow-900 bg-opacity-30 rounded-t-lg p-6 h-96">
+                    <h3 className="text-3xl font-bold mb-3">{top3[0].name}</h3>
+                    <div className="text-6xl font-bold mb-6 text-yellow-300">1st</div>
+                    <div className="bg-white bg-opacity-20 p-4 rounded mb-4">
+                        <div className="text-3xl font-bold">{top3[0].exact_matches}</div>
+                        <div className="text-lg opacity-70">Exact Matches</div>
+                    </div>
+                    <div className="bg-white bg-opacity-20 p-4 rounded">
+                        <div className="text-3xl font-bold">{top3[0].exact_top3_matches}</div>
+                        <div className="text-lg opacity-70">Top 3 Matches</div>
+                    </div>
+                </div>
+            </div>
+            )}
+
+            {/* Third Place */}
+            {revealStage >= 2 && (
+            <div className="w-1/3 text-center mx-6 animate-podium-rise" style={{ animationDelay: '0.6s' }}>
+                <div className="mx-auto w-20 h-20 rounded-full bg-amber-700 flex items-center justify-center mb-5">
+                    <Trophy size={40} />
+                </div>
+                <div className="bg-amber-900 bg-opacity-30 rounded-t-lg p-6 h-56">
+                    <h3 className="text-xl font-bold mb-2">{top3[2].name}</h3>
+                    <div className="text-4xl font-bold mb-3">3rd</div>
+                    <div className="bg-white bg-opacity-10 p-3 rounded mb-3">
+                        <div className="text-xl font-bold">{top3[2].exact_matches}</div>
+                        <div className="text-base opacity-70">Exact Matches</div>
+                    </div>
+                    <div className="bg-white bg-opacity-10 p-3 rounded">
+                        <div className="text-xl font-bold">{top3[2].exact_top3_matches}</div>
+                        <div className="text-base opacity-70">Top 3 Matches</div>
+                    </div>
+                </div>
+            </div>
+            )}
+        </div>
+
+        <div className="w-full max-w-4xl bg-blue-900 bg-opacity-30 h-8 rounded-t-lg"></div>
+    </div>
+    );
+    };
+
+    // Add required CSS animation classes
+    const style = document.createElement('style');
+    style.textContent = `
+    @keyframes slide-in-right {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+    }
+
+    @keyframes slide-in-left {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+    }
+
+    @keyframes accuracy-fill {
+    from { clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 50%); }
+    to { clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 50%); }
+    }
+
+    @keyframes reveal {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes podium-rise {
+    0% { transform: translateY(100%); }
+    100% { transform: translateY(0); }
+    }
+
+    @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+    }
+
+    @keyframes scale-in {
+    0% { opacity: 0; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1); }
+    }
+
+    .animate-slide-in-right {
+    animation: slide-in-right 0.5s ease-out forwards;
+    }
+
+    .animate-slide-in-left {
+    animation: slide-in-left 0.5s ease-out forwards;
+    }
+
+    .animate-accuracy-fill {
+    animation: accuracy-fill 2s ease-out forwards;
+    }
+
+    .animate-reveal {
+    animation: reveal 1s ease-out forwards;
+    }
+
+    .animate-podium-rise {
+    animation: podium-rise 1.5s ease-out forwards;
+    }
+
+    .animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+    }
+
+    .animate-scale-in {
+    animation: scale-in 1s ease-out forwards;
+    }
+    `;
+    document.head.appendChild(style);
+
+    export default EurovisionSlideshow;

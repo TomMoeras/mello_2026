@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Melodifestivalen 2026 – Final Running Order</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap');
+
+  :root {
+    --mello-blue: #003DA5;
+    --mello-gold: #FECC02;
+    --mello-light: #f8f9ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: white;
+    color: #1a1a2e;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 18px 22px;
+  }
+
+  .page-back {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  /* === HEADER === */
+  .header {
+    text-align: center;
+    margin-bottom: 14px;
+    padding-bottom: 11px;
+    border-bottom: 3px solid var(--mello-gold);
+  }
+
+  .header::before {
+    content: '\1F1F8\1F1EA';
+    font-size: 22px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--mello-blue);
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  .header .subtitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mello-blue);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .header .event-info {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 6px;
+    font-size: 10px;
+    color: #555;
+    font-weight: 500;
+  }
+
+  /* === TWO-COLUMN GRID === */
+  .entries-grid {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+  }
+
+  .entries-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .entries-col:first-child {
+    padding-right: 11px;
+    border-right: 1.5px solid #d0d8ee;
+  }
+
+  .entries-col:last-child {
+    padding-left: 11px;
+  }
+
+  /* === ENTRY CARD === */
+  .entry {
+    display: flex;
+    flex-direction: column;
+    padding: 7px 10px 7px;
+    border-radius: 10px;
+    background: var(--mello-light);
+    border: 1px solid #e8ecf4;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    gap: 6px;
+  }
+
+  .entry-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  /* Running order number */
+  .entry-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--mello-blue);
+    color: white;
+    font-weight: 800;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  /* Artist photo */
+  .artist-photo {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 2.5px solid white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.14);
+    background: #e0e4ef;
+  }
+
+  /* Artist info */
+  .entry-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .artist-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a1a2e;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .song-title {
+    font-size: 11px;
+    font-weight: 400;
+    color: #555;
+    font-style: italic;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .song-title::before { content: '\201C'; }
+  .song-title::after  { content: '\201D'; }
+
+  /* Prediction box */
+  .prediction-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
+  }
+
+  .prediction-label {
+    font-size: 7px;
+    font-weight: 700;
+    color: var(--mello-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .prediction-slot {
+    width: 32px;
+    height: 30px;
+    border: 2px dashed #b0bcd8;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7.5px;
+    color: #c0c8d8;
+    font-weight: 600;
+  }
+
+  .prediction-slot::after { content: '#'; }
+
+  /* Notes section */
+  .entry-notes {
+    padding-top: 5px;
+    border-top: 1px dashed #dde3f0;
+  }
+
+  .notes-label {
+    font-size: 7.5px;
+    font-weight: 700;
+    color: #a0a8bf;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .notes-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .notes-line {
+    height: 1px;
+    border-bottom: 1px solid #d0d8ee;
+  }
+
+  /* === FOOTER (front) === */
+  .footer {
+    margin-top: 11px;
+    padding-top: 8px;
+    border-top: 2px solid var(--mello-gold);
+  }
+
+  .footer-left {
+    font-size: 8.5px;
+    color: #888;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .credit {
+    font-size: 7.5px;
+    color: #bbb;
+    text-align: center;
+    margin-top: 3px;
+  }
+
+  /* ===================== */
+  /* === BACK PAGE      === */
+  /* ===================== */
+
+  .back-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--mello-gold);
+  }
+
+  .back-header::before {
+    content: '\1F3C6';
+    font-size: 28px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .back-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--mello-blue);
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+  }
+
+  .back-header .subtitle {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--mello-blue);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  /* Ranking slots */
+  .ranking-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .rank-slot {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .rank-medal {
+    width: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
+    padding: 10px 0;
+  }
+
+  .rank-medal.gold   { background: linear-gradient(135deg, #fff9db, #ffeaa0); border: 2px solid #e6b800; }
+  .rank-medal.silver { background: linear-gradient(135deg, #f4f6f8, #dde2ea); border: 2px solid #b8c0cc; }
+  .rank-medal.bronze { background: linear-gradient(135deg, #fff0e8, #ffd4b0); border: 2px solid #c8834a; }
+  .rank-medal.plain  { background: var(--mello-light); border: 2px solid #dde3f0; }
+
+  .rank-medal .rank-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .rank-medal.gold   .rank-num { color: #b8860b; }
+  .rank-medal.silver .rank-num { color: #7a8799; }
+  .rank-medal.bronze .rank-num { color: #a0522d; }
+  .rank-medal.plain  .rank-num { color: var(--mello-blue); }
+
+  .rank-medal .rank-icon {
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .rank-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--mello-light);
+    border: 1px solid #e8ecf4;
+  }
+
+  .rank-fields {
+    display: flex;
+    gap: 12px;
+  }
+
+  .rank-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .rank-field label {
+    font-size: 7.5px;
+    font-weight: 700;
+    color: var(--mello-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  .rank-field .field-line {
+    height: 1px;
+    border-bottom: 1.5px solid #b8c4dc;
+  }
+
+  .rank-notes {
+    padding-top: 6px;
+    border-top: 1px dashed #dde3f0;
+  }
+
+  .rank-notes-label {
+    font-size: 7.5px;
+    font-weight: 700;
+    color: #a0a8bf;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .rank-notes-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .rank-notes-line {
+    height: 1px;
+    border-bottom: 1px solid #d8dff0;
+  }
+
+  /* Extra notes area at bottom of back */
+  .extra-notes {
+    margin-top: 4px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #e8ecf4;
+    background: var(--mello-light);
+  }
+
+  .extra-notes h3 {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--mello-blue);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .extra-notes-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .extra-notes-lines .line {
+    border-bottom: 1px solid #d8dff0;
+    height: 1px;
+  }
+
+  .back-footer {
+    margin-top: 14px;
+    padding-top: 9px;
+    border-top: 2px solid var(--mello-gold);
+    font-size: 9px;
+    color: #888;
+    text-align: center;
+  }
+
+  @media print {
+    body { background: white; }
+    .page { padding: 0; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================== -->
+<!-- PAGE 1 – RUNNING ORDER  -->
+<!-- ======================== -->
+<div class="page">
+  <div class="header">
+    <h1>Melodifestivalen 2026</h1>
+    <div class="subtitle">The Grand Final</div>
+    <div class="event-info">
+      <span>Saturday 7 March 2026</span>
+      <span>|</span>
+      <span>Strawberry Arena, Stockholm</span>
+      <span>|</span>
+      <span>SVT</span>
+    </div>
+  </div>
+
+  <div class="entries-grid">
+
+    <!-- LEFT COLUMN: entries 1–6 -->
+    <div class="entries-col">
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">1</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/3/3e/A%2ATeens_Melodifestivalen_2026.jpg/300px-A%2ATeens_Melodifestivalen_2026.jpg" alt="A*Teens">
+          <div class="entry-info">
+            <div class="artist-name">A*Teens</div>
+            <div class="song-title">Iconic</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">2</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/4/43/Meira_Omar_Melodifestivalen_2026.jpg/300px-Meira_Omar_Melodifestivalen_2026.jpg" alt="Meira Omar">
+          <div class="entry-info">
+            <div class="artist-name">Meira Omar</div>
+            <div class="song-title">Dooset Daram</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">3</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/4/49/Lilla_Al-Fadji_Melodifestivalen_2026.jpg/300px-Lilla_Al-Fadji_Melodifestivalen_2026.jpg" alt="Lilla Al-Fadji">
+          <div class="entry-info">
+            <div class="artist-name">Lilla Al-Fadji</div>
+            <div class="song-title">Delulu</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">4</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/b/b7/Saga_Ludvigsson_Melodifestivalen_2026.jpg/300px-Saga_Ludvigsson_Melodifestivalen_2026.jpg" alt="Saga Ludvigsson">
+          <div class="entry-info">
+            <div class="artist-name">Saga Ludvigsson</div>
+            <div class="song-title">Ain't Today</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">5</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/a/ab/Smash_Into_Pieces_2024.jpg/300px-Smash_Into_Pieces_2024.jpg" alt="Smash Into Pieces">
+          <div class="entry-info">
+            <div class="artist-name">Smash Into Pieces</div>
+            <div class="song-title">Hollow</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">6</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/2/26/Cimberly_Melodifestivalen_2026.jpg/300px-Cimberly_Melodifestivalen_2026.jpg" alt="Cimberly">
+          <div class="entry-info">
+            <div class="artist-name">Cimberly</div>
+            <div class="song-title">Eternity</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end left column -->
+
+    <!-- RIGHT COLUMN: entries 7–12 -->
+    <div class="entries-col">
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">7</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/e/e7/Medina_Melodifestivalen_2026.jpg/300px-Medina_Melodifestivalen_2026.jpg" alt="Medina">
+          <div class="entry-info">
+            <div class="artist-name">Medina</div>
+            <div class="song-title">Viva l'amor</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">8</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/5/5b/Greczula_Melodifestivalen_2026.jpg/300px-Greczula_Melodifestivalen_2026.jpg" alt="Greczula">
+          <div class="entry-info">
+            <div class="artist-name">Greczula</div>
+            <div class="song-title">Half of Me</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">9</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/c/c6/Robin_Bengtsson_Melodifestivalen_2026.jpg/300px-Robin_Bengtsson_Melodifestivalen_2026.jpg" alt="Robin Bengtsson">
+          <div class="entry-info">
+            <div class="artist-name">Robin Bengtsson</div>
+            <div class="song-title">Honey Honey</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">10</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/3/3c/FELICIA_Melodifestivalen_2026.jpg/300px-FELICIA_Melodifestivalen_2026.jpg" alt="Felicia">
+          <div class="entry-info">
+            <div class="artist-name">Felicia</div>
+            <div class="song-title">My System</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">11</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/3/3b/Waste_Your_Love_2026_Sanna_Nielsen.jpg/300px-Waste_Your_Love_2026_Sanna_Nielsen.jpg" alt="Sanna Nielsen">
+          <div class="entry-info">
+            <div class="artist-name">Sanna Nielsen</div>
+            <div class="song-title">Waste Your Love</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-top">
+          <div class="entry-number">12</div>
+          <img class="artist-photo" src="https://mellopedia.svt.se/images/thumb/2/2f/Brandsta_City_Sl%C3%A4ckers_Melodifestivalen_2026.jpg/300px-Brandsta_City_Sl%C3%A4ckers_Melodifestivalen_2026.jpg" alt="Brandsta City Släckers">
+          <div class="entry-info">
+            <div class="artist-name">Brandsta City Sl&auml;ckers</div>
+            <div class="song-title">Rakt in i elden</div>
+          </div>
+          <div class="prediction-box">
+            <div class="prediction-label">Pred.</div>
+            <div class="prediction-slot"></div>
+          </div>
+        </div>
+        <div class="entry-notes">
+          <span class="notes-label">Notes</span>
+          <div class="notes-lines">
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+            <div class="notes-line"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end right column -->
+
+  </div><!-- end entries-grid -->
+
+  <div class="footer">
+    <div class="footer-left">
+      Melodifestivalen 2026 &middot; 66th Edition &middot; Hosted by Gina Dirawi &amp; Hampus Nessvold &middot; Winner represents Sweden at Eurovision 2026 in Vienna &middot; Voting: 50% Jury + 50% Televote
+    </div>
+    <div class="credit">Photos: SVT/Mellopedia</div>
+  </div>
+</div>
+
+<!-- ======================== -->
+<!-- PAGE 2 – FINAL RANKING  -->
+<!-- ======================== -->
+<div class="page page-back">
+  <div class="back-header">
+    <h1>Melodifestivalen 2026</h1>
+    <div class="subtitle">My Final Ranking</div>
+  </div>
+
+  <div class="ranking-section">
+
+    <div class="rank-slot">
+      <div class="rank-medal gold">
+        <div class="rank-num">1</div>
+        <div class="rank-icon">&#x1F947;</div>
+      </div>
+      <div class="rank-content">
+        <div class="rank-fields">
+          <div class="rank-field" style="flex: 2">
+            <label>Artist</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+          <div class="rank-field" style="flex: 3">
+            <label>Song</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+        </div>
+        <div class="rank-notes">
+          <span class="rank-notes-label">Notes</span>
+          <div class="rank-notes-lines">
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-slot">
+      <div class="rank-medal silver">
+        <div class="rank-num">2</div>
+        <div class="rank-icon">&#x1F948;</div>
+      </div>
+      <div class="rank-content">
+        <div class="rank-fields">
+          <div class="rank-field" style="flex: 2">
+            <label>Artist</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+          <div class="rank-field" style="flex: 3">
+            <label>Song</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+        </div>
+        <div class="rank-notes">
+          <span class="rank-notes-label">Notes</span>
+          <div class="rank-notes-lines">
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-slot">
+      <div class="rank-medal bronze">
+        <div class="rank-num">3</div>
+        <div class="rank-icon">&#x1F949;</div>
+      </div>
+      <div class="rank-content">
+        <div class="rank-fields">
+          <div class="rank-field" style="flex: 2">
+            <label>Artist</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+          <div class="rank-field" style="flex: 3">
+            <label>Song</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+        </div>
+        <div class="rank-notes">
+          <span class="rank-notes-label">Notes</span>
+          <div class="rank-notes-lines">
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-slot">
+      <div class="rank-medal plain">
+        <div class="rank-num">4</div>
+        <div class="rank-icon" style="font-size:12px;color:#8898b8;">&#9670;</div>
+      </div>
+      <div class="rank-content">
+        <div class="rank-fields">
+          <div class="rank-field" style="flex: 2">
+            <label>Artist</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+          <div class="rank-field" style="flex: 3">
+            <label>Song</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+        </div>
+        <div class="rank-notes">
+          <span class="rank-notes-label">Notes</span>
+          <div class="rank-notes-lines">
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rank-slot">
+      <div class="rank-medal plain">
+        <div class="rank-num">5</div>
+        <div class="rank-icon" style="font-size:12px;color:#8898b8;">&#9670;</div>
+      </div>
+      <div class="rank-content">
+        <div class="rank-fields">
+          <div class="rank-field" style="flex: 2">
+            <label>Artist</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+          <div class="rank-field" style="flex: 3">
+            <label>Song</label>
+            <div class="field-line"></div>
+            <div class="field-line"></div>
+          </div>
+        </div>
+        <div class="rank-notes">
+          <span class="rank-notes-label">Notes</span>
+          <div class="rank-notes-lines">
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+            <div class="rank-notes-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="extra-notes">
+    <h3>Overall Thoughts</h3>
+    <div class="extra-notes-lines">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+  </div>
+
+  <div class="back-footer">
+    Melodifestivalen 2026 &middot; Saturday 7 March 2026 &middot; Strawberry Arena, Stockholm
+  </div>
+</div>
+
+</body>
+</html>
